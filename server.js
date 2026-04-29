@@ -6,6 +6,8 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
+const path = require('path');
+
 
 // Load environment variables
 dotenv.config();
@@ -17,8 +19,9 @@ const httpServer = createServer(app);
 app.use(cors());
 app.use(helmet());
 app.use(morgan('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
 
 // Socket.io setup
 const io = new Server(httpServer, {
@@ -36,8 +39,14 @@ io.on('connection', (socket) => {
 });
 
 const authRoutes = require('./routes/auth');
+const depositRoutes = require('./routes/deposits');
 
 app.use('/api/auth', authRoutes);
+app.use('/api/deposits', depositRoutes);
+
+// Removed local uploads static folder
+
+
 
 // Basic Route
 app.get('/', (req, res) => {
