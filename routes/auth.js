@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 // @access  Public
 router.post('/register', async (req, res) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
+    const { firstName, lastName, email, password, referralCode: refCode } = req.body;
 
     // Check if user exists
     let user = await User.findOne({ email });
@@ -16,12 +16,24 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
 
+    // Handle referral
+    let referredBy = null;
+    if (refCode) {
+        const referrer = await User.findOne({ referralCode: refCode });
+        if (referrer) referredBy = referrer._id;
+    }
+
+    // Generate unique referral code for new user
+    const newReferralCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+
     // Create user
     user = await User.create({
       firstName,
       lastName,
       email,
-      password
+      password,
+      referralCode: newReferralCode,
+      referredBy
     });
 
     // Create token
@@ -37,7 +49,8 @@ router.post('/register', async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        role: user.role
+        role: user.role,
+        referralCode: user.referralCode
       }
     });
   } catch (error) {
@@ -87,13 +100,32 @@ router.post('/login', async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        role: user.role
+        role: user.role,
+        referralCode: user.referralCode
       }
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Server Error' });
   }
+});
+
+// @route   GET /api/auth/referrals
+// @desc    Get user's referrals
+// @access  Private
+router.get('/referrals', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+        const referrals = await User.find({ referredBy: decoded.id }).select('firstName lastName email createdAt');
+        
+        res.status(200).json({ success: true, data: referrals });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
 });
 
 module.exports = router;

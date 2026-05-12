@@ -26,6 +26,10 @@ const DepositSchema = new mongoose.Schema({
   transactionId: {
     type: String
   },
+  planName: {
+    type: String,
+    default: 'Manual Deposit'
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -40,9 +40,11 @@ io.on('connection', (socket) => {
 
 const authRoutes = require('./routes/auth');
 const depositRoutes = require('./routes/deposits');
+const withdrawalRoutes = require('./routes/withdrawals');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/deposits', depositRoutes);
+app.use('/api/withdrawals', withdrawalRoutes);
 
 // Removed local uploads static folder
 
