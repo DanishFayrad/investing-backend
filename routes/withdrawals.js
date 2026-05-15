@@ -81,4 +81,24 @@ router.patch('/:id/status', protect, authorize('admin'), async (req, res) => {
   }
 });
 
+// @route   DELETE /api/withdrawals/:id
+// @desc    Delete a withdrawal (Admin only)
+// @access  Private/Admin
+router.delete('/:id', protect, authorize('admin'), async (req, res) => {
+  try {
+    const withdrawal = await Withdrawal.findById(req.params.id);
+
+    if (!withdrawal) {
+      return res.status(404).json({ success: false, message: 'Withdrawal not found' });
+    }
+
+    await withdrawal.deleteOne();
+
+    res.status(200).json({ success: true, message: 'Withdrawal deleted' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+});
+
 module.exports = router;

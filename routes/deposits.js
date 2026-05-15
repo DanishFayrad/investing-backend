@@ -82,4 +82,24 @@ router.patch('/:id/status', protect, authorize('admin'), async (req, res) => {
   }
 });
 
+// @route   DELETE /api/deposits/:id
+// @desc    Delete a deposit (Admin only)
+// @access  Private/Admin
+router.delete('/:id', protect, authorize('admin'), async (req, res) => {
+  try {
+    const deposit = await Deposit.findById(req.params.id);
+
+    if (!deposit) {
+      return res.status(404).json({ success: false, message: 'Deposit not found' });
+    }
+
+    await deposit.deleteOne();
+
+    res.status(200).json({ success: true, message: 'Deposit deleted' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+});
+
 module.exports = router;
