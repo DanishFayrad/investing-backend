@@ -30,6 +30,9 @@ const DepositSchema = new mongoose.Schema({
     type: String,
     default: 'Manual Deposit'
   },
+  approvedAt: {
+    type: Date
+  },
   createdAt: {
     type: Date,
     default: Date.now

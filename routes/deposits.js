@@ -74,6 +74,9 @@ router.patch('/:id/status', protect, authorize('admin'), async (req, res) => {
     }
 
     deposit.status = status;
+    if (status === 'approved') {
+      deposit.approvedAt = new Date();
+    }
     await deposit.save();
 
     res.status(200).json({ success: true, data: deposit });
