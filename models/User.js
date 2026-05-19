@@ -40,6 +40,14 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  affiliateBalance: {
+    type: Number,
+    default: 0
+  },
+  affiliateEarnedTotal: {
+    type: Number,
+    default: 0
+  },
   createdAt: {
     type: Date,
     default: Date.now

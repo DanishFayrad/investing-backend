@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const Commission = require('../models/Commission');
 const jwt = require('jsonwebtoken');
 
 // @route   POST /api/auth/register
@@ -120,8 +121,39 @@ router.get('/referrals', async (req, res) => {
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
         const referrals = await User.find({ referredBy: decoded.id }).select('firstName lastName email createdAt');
-        
+
         res.status(200).json({ success: true, data: referrals });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+});
+
+// @route   GET /api/auth/affiliate
+// @desc    Get user's affiliate balance + commission history
+// @access  Private
+router.get('/affiliate', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+        const user = await User.findById(decoded.id).select('affiliateBalance affiliateEarnedTotal');
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+        const commissions = await Commission.find({ user: decoded.id })
+            .populate('referredUser', 'firstName lastName email')
+            .sort('-createdAt')
+            .limit(50);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                balance: user.affiliateBalance || 0,
+                earnedTotal: user.affiliateEarnedTotal || 0,
+                commissions
+            }
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ success: false, message: 'Server Error' });

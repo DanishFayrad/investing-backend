@@ -18,6 +18,9 @@ const DepositSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please upload a screenshot of the payment']
   },
+  screenshotPublicId: {
+    type: String
+  },
   status: {
     type: String,
     enum: ['pending', 'approved', 'rejected'],
