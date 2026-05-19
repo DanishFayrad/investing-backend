@@ -5,8 +5,8 @@ const User = require('../models/User');
 const Commission = require('../models/Commission');
 const { protect, authorize } = require('../middleware/auth');
 const { uploadScreenshot, cloudinary } = require('../config/cloudinary');
-
-const REFERRAL_PERCENTAGE = 10;
+const { REFERRAL_PERCENTAGE } = require('../config/referralConfig');
+const { maybeAwardMilestoneBonus } = require('../config/affiliateHelpers');
 
 async function creditReferralCommission(deposit) {
   const existing = await Commission.findOne({ deposit: deposit._id });
@@ -39,6 +39,8 @@ async function creditReferralCommission(deposit) {
   await User.findByIdAndUpdate(depositor.referredBy, {
     $inc: { affiliateBalance: commissionAmount, affiliateEarnedTotal: commissionAmount },
   });
+
+  await maybeAwardMilestoneBonus(depositor.referredBy);
 }
 
 async function reverseReferralCommission(deposit) {

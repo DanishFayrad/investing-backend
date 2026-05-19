@@ -24,6 +24,14 @@ const WithdrawalSchema = new mongoose.Schema({
     enum: ['pending', 'approved', 'rejected'],
     default: 'pending'
   },
+  fastTrack: {
+    type: Boolean,
+    default: false
+  },
+  eta: {
+    type: String,
+    default: '24 hours'
+  },
   createdAt: {
     type: Date,
     default: Date.now

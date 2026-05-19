@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const Withdrawal = require('../models/Withdrawal');
 const { protect, authorize } = require('../middleware/auth');
+const { countSuccessfulReferrals } = require('../config/affiliateHelpers');
+const {
+  SUCCESSFUL_REFERRALS_THRESHOLD,
+  FAST_WITHDRAWAL_ETA,
+  DEFAULT_WITHDRAWAL_ETA,
+} = require('../config/referralConfig');
 
 // @route   POST /api/withdrawals
 // @desc    Submit a withdrawal request
@@ -14,11 +20,16 @@ router.post('/', protect, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Please provide all details' });
     }
 
+    const successful = await countSuccessfulReferrals(req.user.id);
+    const fastTrack = successful >= SUCCESSFUL_REFERRALS_THRESHOLD;
+
     const withdrawal = await Withdrawal.create({
       user: req.user.id,
       amount,
       paymentMethod,
-      accountDetails
+      accountDetails,
+      fastTrack,
+      eta: fastTrack ? FAST_WITHDRAWAL_ETA : DEFAULT_WITHDRAWAL_ETA,
     });
 
     res.status(201).json({

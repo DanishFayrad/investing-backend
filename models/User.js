@@ -40,6 +40,10 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
+  referredByPartner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Partner'
+  },
   affiliateBalance: {
     type: Number,
     default: 0
@@ -47,6 +51,10 @@ const UserSchema = new mongoose.Schema({
   affiliateEarnedTotal: {
     type: Number,
     default: 0
+  },
+  referralBonusGiven: {
+    type: Boolean,
+    default: false
   },
   createdAt: {
     type: Date,
